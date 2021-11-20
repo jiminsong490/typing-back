@@ -18,29 +18,22 @@ app.get('/randomText', async (req, res) => {
         database: 'typing',
     })
     const idx1 = req.query.text
-    const idx2 = req.query.nextText
+    console.log(idx1)
     let result = false
 
     const db = await connection.execute(
-        'SELECT `text` FROM `typing`.`exText` WHERE  `idx` IN (?,?)',
-        [idx1, idx2]
+        'SELECT `text` FROM `typing`.`exText` WHERE  `idx` IN (?)',
+        [idx1]
     )
-    // const ndb = await connection.execute(
-    //     'SELECT * FROM `typing`.`exText` WHERE  `idx`= ?',
-    //     [nextRandomNumber]
-    // )
     result = true
     let target = db[0][0]
-    let nextTarget = db[0][1]
-    if (idx1 > idx2) {
-        target = db[0][1]
-        nextTarget = db[0][0]
-    }
-    const text = target.text
-    const nextText = nextTarget.text
-    console.log(text, nextText)
 
-    res.send({ success: result, text: text, nextText: nextText, nextIdx: idx2 })
+    const text = target.text
+    connection.destroy()
+    res.send({
+        success: result,
+        text: text,
+    })
 })
 
 app.post('/exText', async (req, res) => {
@@ -58,8 +51,21 @@ app.post('/exText', async (req, res) => {
         [text]
     )
     result = true
-
+    connection.destroy()
     res.send({ success: result })
 })
 
+app.post('/fileUpload', async (req, res) => {
+    const connection = await mysql.createConnection({
+        host: 'database-3.cjzvwuop4vpy.ap-northeast-2.rds.amazonaws.com',
+        user: 'admin',
+        password: 'rjHD2DB?WDHj6BDD$t&8EfJ8NTnbzGD9!=_Tp6Fdq',
+        database: 'typing',
+    })
+    // const form = new formidable.IncomingForm()
+    const asd = req.body.file
+    console.log(asd)
+
+    res.send({ res: asd })
+})
 app.listen(3712)
