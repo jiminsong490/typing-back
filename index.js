@@ -59,32 +59,24 @@ app.post('/exText', async (req, res) => {
 })
 
 app.post('/fileUpload', upload.single('testfile'), async (req, res) => {
-    try {
-        const connection = await mysql.createConnection({
-            host: 'database-3.cjzvwuop4vpy.ap-northeast-2.rds.amazonaws.com',
-            user: 'admin',
-            password: 'rjHD2DB?WDHj6BDD$t&8EfJ8NTnbzGD9!=_Tp6Fdq',
-            database: 'typing',
-        })
-        const asd = req.file
-        console.log(asd)
-    } catch (err) {
-        console.error(err)
-    }
-    try {
-        const data = fs.readFileSync(asd.path, 'utf8')
-        console.log(data)
-        const db = await connection.execute(
-            'INSERT INTO `typing`.`exText` (`text`) VALUES (?)',
-            [data]
-        )
-        result = true
-        // db 업로드 성공 시, file 지우기
-        connection.destroy()
-    } catch (err) {
-        console.error(err)
-    }
+    const connection = await mysql.createConnection({
+        host: 'database-3.cjzvwuop4vpy.ap-northeast-2.rds.amazonaws.com',
+        user: 'admin',
+        password: 'rjHD2DB?WDHj6BDD$t&8EfJ8NTnbzGD9!=_Tp6Fdq',
+        database: 'typing',
+    })
+    const asd = req.file
+    console.log(asd)
 
+    const data = fs.readFileSync(asd.path, 'utf8')
+    console.log(data)
+    const db = await connection.execute(
+        'INSERT INTO `typing`.`exText` (`text`) VALUES (?)',
+        [data]
+    )
+    result = true
+    fs.unlinkSync(asd.path)
+    connection.destroy()
     res.send({ success: result })
 })
 
@@ -213,9 +205,6 @@ app.post('/signup', async (req, res) => {
 app.delete('/delete', async (req, res) => {
     let success = false
     let errorMsg
-    const data = JSON.parse(
-        fs.readFileSync('data/loginPage.json').toString('utf-8')
-    )
     const connection = await mysql.createConnection({
         host: 'database-3.cjzvwuop4vpy.ap-northeast-2.rds.amazonaws.com',
         user: 'admin',
