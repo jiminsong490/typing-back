@@ -158,6 +158,7 @@ app.post('/login', async (req, res) => {
             jwt.sign(
                 {
                     name: `${target.name}`,
+                    email: `${target.email}`,
                 },
 
                 'SeCrEtKeYfOrHaShInG', // secrec Key
@@ -177,7 +178,7 @@ app.post('/login', async (req, res) => {
         })
     }
     getToken().then((token) => {
-        res.send({ token, result })
+        res.send({ token: token, result: result })
     })
 })
 
@@ -199,7 +200,7 @@ app.post('/signup', async (req, res) => {
         [email, password, name, phoneNumber]
     )
     result = true
-    res.send({ success: result, index: req.body.index })
+    res.send({ success: result })
 })
 
 app.delete('/delete', async (req, res) => {
@@ -237,7 +238,7 @@ app.delete('/delete', async (req, res) => {
     res.send({ success, errorMsg })
 })
 
-app.put('/put', async (req, res) => {
+app.put('/change', async (req, res) => {
     let success = false
     let errorMsg
     const email = req.body.email
