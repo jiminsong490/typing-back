@@ -5,6 +5,8 @@ const mysql = require('mysql2/promise')
 const app = express()
 const fs = require('fs')
 const bcrypt = require('bcrypt')
+// const busboy = require('busboy')
+// const bcryptjs = requaire('bcryptjs')
 const { application } = require('express')
 const saltRounds = 10
 const multer = require('multer')
@@ -15,75 +17,57 @@ app.use(cors())
 
 app.get('/randomText', async (req, res) => {
     const connection = await mysql.createConnection({
-        host: 'database-3.cjzvwuop4vpy.ap-northeast-2.rds.amazonaws.com',
-        user: 'admin',
-        password: 'rjHD2DB?WDHj6BDD$t&8EfJ8NTnbzGD9!=_Tp6Fdq',
-        database: 'typing',
+        host: process.env.DE_HOST,
+        user: process.env.DE_USER,
+        password: process.env.DE_PASSWORD,
+        database: process.env.DE_DATABASE,
     })
-    const idx1 = req.query.text
-    console.log(idx1)
-    let result = false
+    try {
+        const language = req.query.language
+        let result = false
 
-    const db = await connection.execute(
-        'SELECT `text` FROM `typing`.`exText` WHERE  `idx` IN (?)',
-        [idx1]
-    )
-    result = true
-    let target = db[0][0]
-
-    const text = target.text
-    connection.destroy()
-    res.send({
-        success: result,
-        text: text,
-    })
+        const db = await connection.execute(
+            'SELECT `text` FROM `typing`.`exText` WHERE  `language` IN (?)',
+            [language]
+        )
+        result = true
+        let target = db[0][0]
+        const text = target.text
+        connection.destroy()
+        res.send({
+            success: result,
+            text: text,
+        })
+    } catch (e) {
+        res.send({
+            success: false,
+        })
+    }
 })
 
-app.post('/exText', async (req, res) => {
-    const connection = await mysql.createConnection({
-        host: 'database-3.cjzvwuop4vpy.ap-northeast-2.rds.amazonaws.com',
-        user: 'admin',
-        password: 'rjHD2DB?WDHj6BDD$t&8EfJ8NTnbzGD9!=_Tp6Fdq',
-        database: 'typing',
-    })
-    const text = req.body.text
-    let result = false
+// app.post('/exText', async (req, res) => {
+//     const connection = await mysql.createConnection({
+//         host: 'database-3.cjzvwuop4vpy.ap-northeast-2.rds.amazonaws.com',
+//         user: 'admin',
+//         password: 'rjHD2DB?WDHj6BDD$t&8EfJ8NTnbzGD9!=_Tp6Fdq',
+//         database: 'typing',
+//     })
+//     console.log(req.body)
+//     const text = req.body.text
+//     let result = false
 
-    const db = await connection.execute(
-        'INSERT INTO `typing`.`exText` (`text`) VALUES (?)',
-        [text]
-    )
-    result = true
-    connection.destroy()
-    res.send({ success: result })
-})
-
-app.post('/fileUpload', upload.single('testfile'), async (req, res) => {
-    const connection = await mysql.createConnection({
-        host: 'database-3.cjzvwuop4vpy.ap-northeast-2.rds.amazonaws.com',
-        user: 'admin',
-        password: 'rjHD2DB?WDHj6BDD$t&8EfJ8NTnbzGD9!=_Tp6Fdq',
-        database: 'typing',
-    })
-    const asd = req.file
-    console.log(asd)
-
-    const data = fs.readFileSync(asd.path, 'utf8')
-    console.log(data)
-    const db = await connection.execute(
-        'INSERT INTO `typing`.`exText` (`text`) VALUES (?)',
-        [data]
-    )
-    result = true
-    fs.unlinkSync(asd.path)
-    connection.destroy()
-    res.send({ success: result })
-})
+//     const db = await connection.execute(
+//         'INSERT INTO `typing`.`exText` (`text`) VALUES (?)',
+//         [text]
+//     )
+//     result = true
+//     connection.destroy()
+//     res.send({ success: result })
+// })
 
 app.get('/findall', async (req, res) => {
     let email = req.query.email
     let result = false
-    let index
     const phoneNumber = req.query.tel
     const name = req.query.username
 
@@ -108,29 +92,33 @@ app.get('/checktoken', function (req, res) {
     const token = req.headers['token'] // client에게서 받은 토큰
     const result = false
     /* 토큰이 없으면 403 에러 응답 처리 */
-    if (!token) {
-        return res.status(403).json({
-            success: false,
-            message: 'not logged in',
+    try {
+        if (!token) {
+            return res.status(403).json({
+                success: false,
+                message: 'not logged in',
+            })
+        }
+        /* 토큰 유효성 검사 */
+        const p = new Promise((resolve, reject) => {
+            jwt.verify(token, 'SeCrEtKeYfOrHaShInG', (err, decoded) => {
+                if (err) reject(err)
+                else resolve(decoded)
+            })
         })
+        /* 유효하지 않은 토큰으로 403 에러 처리 */
+        const onError = (error) => {
+            res.status(403).json({
+                success: false,
+                message: error.message,
+            })
+        }
+        p.then((decoded) => {
+            res.send(decoded.name)
+        }).catch(onError)
+    } catch (e) {
+        res.send({ success: result })
     }
-    /* 토큰 유효성 검사 */
-    const p = new Promise((resolve, reject) => {
-        jwt.verify(token, 'SeCrEtKeYfOrHaShInG', (err, decoded) => {
-            if (err) reject(err)
-            else resolve(decoded)
-        })
-    })
-    /* 유효하지 않은 토큰으로 403 에러 처리 */
-    const onError = (error) => {
-        res.status(403).json({
-            success: false,
-            message: error.message,
-        })
-    }
-    p.then((decoded) => {
-        res.send(decoded.name)
-    }).catch(onError)
 })
 
 app.post('/login', async (req, res) => {
@@ -189,6 +177,7 @@ app.post('/signup', async (req, res) => {
         password: 'rjHD2DB?WDHj6BDD$t&8EfJ8NTnbzGD9!=_Tp6Fdq',
         database: 'users',
     })
+    console.log(req.body)
     const email = req.body.email
     const password = bcrypt.hashSync(req.body.password, saltRounds)
     const phoneNumber = req.body.tel
@@ -200,6 +189,28 @@ app.post('/signup', async (req, res) => {
         [email, password, name, phoneNumber]
     )
     result = true
+    res.send({ success: result })
+})
+
+app.post('/fileUpload', upload.single('testfile'), async (req, res) => {
+    const connection = await mysql.createConnection({
+        host: 'database-3.cjzvwuop4vpy.ap-northeast-2.rds.amazonaws.com',
+        user: 'admin',
+        password: 'rjHD2DB?WDHj6BDD$t&8EfJ8NTnbzGD9!=_Tp6Fdq',
+        database: 'typing',
+    })
+    const asd = req.file
+    console.log(asd)
+
+    const data = fs.readFileSync(asd.path, 'utf8')
+    console.log(data)
+    const db = await connection.execute(
+        'INSERT INTO `typing`.`exText` (`text`) VALUES (?)',
+        [data]
+    )
+    result = true
+    fs.unlinkSync(asd.path)
+    connection.destroy()
     res.send({ success: result })
 })
 
