@@ -45,13 +45,12 @@ app.get('/randomText', async (req, res) => {
     }
 })
 
-// app.post('/exText', async (req, res) => {
-//     const connection = await mysql.createConnection({
-//         host: 'database-3.cjzvwuop4vpy.ap-northeast-2.rds.amazonaws.com',
-//         user: 'admin',
-//         password: 'rjHD2DB?WDHj6BDD$t&8EfJ8NTnbzGD9!=_Tp6Fdq',
-//         database: 'typing',
-//     })
+// const connection = await mysql.createConnection({
+//     host: process.env.DE_HOST,
+//     user: process.env.DE_USER,
+//     password: process.env.DE_PASSWORD,
+//     database: process.env.DE_DATABASE,
+// })
 //     console.log(req.body)
 //     const text = req.body.text
 //     let result = false
@@ -72,10 +71,10 @@ app.get('/findall', async (req, res) => {
     const name = req.query.username
 
     const connection = await mysql.createConnection({
-        host: 'database-3.cjzvwuop4vpy.ap-northeast-2.rds.amazonaws.com',
-        user: 'admin',
-        password: 'rjHD2DB?WDHj6BDD$t&8EfJ8NTnbzGD9!=_Tp6Fdq',
-        database: 'users',
+        host: process.env.DE_HOST,
+        user: process.env.DE_USER,
+        password: process.env.DE_PASSWORD,
+        database: process.env.DE_DATABASE,
     })
 
     const db = await connection.execute(
@@ -127,10 +126,10 @@ app.post('/login', async (req, res) => {
     const password = req.body.password
     // console.log(password, bcrypt.hashSync(password, saltRounds))
     const connection = await mysql.createConnection({
-        host: 'database-3.cjzvwuop4vpy.ap-northeast-2.rds.amazonaws.com',
-        user: 'admin',
-        password: 'rjHD2DB?WDHj6BDD$t&8EfJ8NTnbzGD9!=_Tp6Fdq',
-        database: 'users',
+        host: process.env.DE_HOST,
+        user: process.env.DE_USER,
+        password: process.env.DE_PASSWORD,
+        database: process.env.DE_DATABASE,
     })
     const db = await connection.execute(
         'SELECT `idx`, `email`, `password`, `name`, `phoneNumber`, `signupDate` FROM `users`.`users` WHERE  `email`= ?',
@@ -172,10 +171,10 @@ app.post('/login', async (req, res) => {
 
 app.post('/signup', async (req, res) => {
     const connection = await mysql.createConnection({
-        host: 'database-3.cjzvwuop4vpy.ap-northeast-2.rds.amazonaws.com',
-        user: 'admin',
-        password: 'rjHD2DB?WDHj6BDD$t&8EfJ8NTnbzGD9!=_Tp6Fdq',
-        database: 'users',
+        host: process.env.DE_HOST,
+        user: process.env.DE_USER,
+        password: process.env.DE_PASSWORD,
+        database: process.env.DE_DATABASE,
     })
     console.log(req.body)
     const email = req.body.email
@@ -194,10 +193,10 @@ app.post('/signup', async (req, res) => {
 
 app.post('/fileUpload', upload.single('testfile'), async (req, res) => {
     const connection = await mysql.createConnection({
-        host: 'database-3.cjzvwuop4vpy.ap-northeast-2.rds.amazonaws.com',
-        user: 'admin',
-        password: 'rjHD2DB?WDHj6BDD$t&8EfJ8NTnbzGD9!=_Tp6Fdq',
-        database: 'typing',
+        host: process.env.DE_HOST,
+        user: process.env.DE_USER,
+        password: process.env.DE_PASSWORD,
+        database: process.env.DE_DATABASE,
     })
     const asd = req.file
     console.log(asd)
@@ -218,10 +217,10 @@ app.delete('/delete', async (req, res) => {
     let success = false
     let errorMsg
     const connection = await mysql.createConnection({
-        host: 'database-3.cjzvwuop4vpy.ap-northeast-2.rds.amazonaws.com',
-        user: 'admin',
-        password: 'rjHD2DB?WDHj6BDD$t&8EfJ8NTnbzGD9!=_Tp6Fdq',
-        database: 'users',
+        host: process.env.DE_HOST,
+        user: process.env.DE_USER,
+        password: process.env.DE_PASSWORD,
+        database: process.env.DE_DATABASE,
     })
     const reqEmail = req.body.email
     const password = req.body.password
@@ -257,12 +256,11 @@ app.put('/change', async (req, res) => {
     const newPasswordHash = bcrypt.hashSync(req.body.changePassword, saltRounds)
 
     const connection = await mysql.createConnection({
-        host: 'database-3.cjzvwuop4vpy.ap-northeast-2.rds.amazonaws.com',
-        user: 'admin',
-        password: 'rjHD2DB?WDHj6BDD$t&8EfJ8NTnbzGD9!=_Tp6Fdq',
-        database: 'users',
+        host: process.env.DE_HOST,
+        user: process.env.DE_USER,
+        password: process.env.DE_PASSWORD,
+        database: process.env.DE_DATABASE,
     })
-
     const db = await connection.query(
         'SELECT * FROM `users`.`users` WHERE  `email`= ?',
         [email]
